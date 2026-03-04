@@ -6,6 +6,7 @@ import {
   ClerkProvider
 } from '@clerk/nextjs'
 import Provider from "./provider"
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: "AI Agent Builder Platform",
@@ -29,6 +30,7 @@ export default function RootLayout({
         <ConvexClientProvider>
           <Provider>
             {children}
+            <Toaster />
           </Provider></ConvexClientProvider>
       </body>
     </html>

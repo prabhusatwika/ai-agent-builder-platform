@@ -14,6 +14,8 @@ export default defineSchema({
         agentId:v.string(),
         name:v.string(),
         config:v.optional(v.string()),
+        nodes:v.optional(v.any()),
+        edges:v.optional(v.any()),
         published:v.boolean(),
         userId:v.id('UserTable')
     })
