@@ -1,6 +1,12 @@
 import { WorkflowContext } from '@/context/WorkflowContext'
 import React, { useContext } from 'react'
 import AgentSettings from '../_nodeSettings/AgentSettings'
+import EndSettings from '../_nodeSettings/EndSettings'
+import IfElseNode from '../_customNodes/IfElseNode'
+import IfElseSettings from '../_nodeSettings/IfElseSettings'
+import WhileSettings from '../_nodeSettings/WhileSettings'
+import UserApproval from '../_nodeSettings/UserApproval'
+import ApiAgentSettings from '../_nodeSettings/ApiSettings'
 
 function SettingPanel() {
     const {selectedNode, setAddedNodes}=useContext(WorkflowContext)
@@ -25,6 +31,41 @@ function SettingPanel() {
         {selectedNode?.type=='AgentNode' && <AgentSettings selectedNode={selectedNode}
         updateFormData={(value:any)=>onUpdateNodeData(value)}
         />}
+        {selectedNode?.type=='EndNode' && <EndSettings
+        selectedNode={selectedNode}
+        updateFormData={(value:any)=>onUpdateNodeData(value)}
+        />}
+        {selectedNode?.type=='IfElseNode' &&
+        <IfElseSettings
+        selectedNode={selectedNode}
+        updateFormData={(value:any)=>onUpdateNodeData(value)}
+        
+        />
+        }
+        {selectedNode?.type=='WhileNode' &&
+        <WhileSettings
+        selectedNode={selectedNode}
+        updateFormData={(value:any)=>onUpdateNodeData(value)}
+        
+        />
+        }
+        {selectedNode?.type=='UserApproval' &&
+        <UserApproval
+        selectedNode={selectedNode}
+        updateFormData={(value:any)=>onUpdateNodeData(value)}
+        
+        />
+        }
+        {selectedNode?.type=='ApiNode' &&
+        <ApiAgentSettings
+        selectedNode={selectedNode}
+        updateFormData={(value:any)=>onUpdateNodeData(value)}
+        
+        />
+        }
+
+
+
     </div>
   )
 }

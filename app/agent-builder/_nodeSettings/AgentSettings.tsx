@@ -12,87 +12,100 @@ import { toast } from 'sonner'
 function AgentSettings({selectedNode, updateFormData}:any) {
   
     
-  const [formData,setFormData]=useState({
-    name:'',
-    instruction:'',
-    includeChatHistory:true,
-    model:'gemini-flash-1.5',
-    output:'text',
-    schema:''
-  })  
+    const [formData,setFormData]=useState({
+        name:'',
+        instruction:'',
+        includeChatHistory:true,
+        model:'gemini-flash-1.5',
+        output:'text',
+        schema:''
+    })  
 
-  useEffect(()=>{
-    selectedNode && setFormData(selectedNode?.data?.settings)
-  }, [selectedNode])
+    useEffect(() => {
+    if (selectedNode?.data?.settings) {
+        setFormData((prev) => ({
+            ...prev,
+            ...selectedNode.data.settings
+        }))
+    }
+}, [selectedNode])
 
 
-  const handleChange=(key:string,value:any)=>{
-    setFormData((prev) => ({
-        ...prev,
-        [key]: value        
-    }))
-  }
+    const handleChange=(key:string,value:any)=>{
+        setFormData((prev) => ({
+            ...prev,
+            [key]: value        
+        }))
+    }
 
-  const onSave=() => {
-    console.log(formData);
-    updateFormData(formData)
-    toast.success('Settings updated!');
-  }
-  return (
-    <div>
-        <h2 className='font-bold'>Agent</h2>
-        <p className='text-gray-500 mt-2'>Call the AI model with your instruction</p>
-        <div className='mt-3 space-y-1'>
-            <Label>Name</Label>
-            <Input placeholder='Agent Name' 
-                
-                onChange={(event) => handleChange('name',event.target.value)} />
-        </div>
-        <div className='mt-3 space-y-1'>
-            <Label>Instruction</Label>
-            <Textarea placeholder='Instruction' onChange={(event) => handleChange('instruction',event.target.value)}/>
-            <h2 className='text-sm p-1 flex gap-2 items-center'>Add Context<FileJson className='h-3 w-3'/></h2>
-        </div>
-        <div className='mt-3 flex justify-between items-center'>
-            <Label>Include chat history</Label>
-            <Switch checked={true}
-            onCheckedChange={(checked)=>handleChange('includeHistory',checked)}
-            />
-        </div>
-        <div className='mt-3 flex justify-between items-center'>
-            <Label>Model</Label>
-            <Select onValueChange={(value) => handleChange('model',value)}>
-                <SelectTrigger >
-                    <SelectValue placeholder="gemini flash 1.5" ></SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value='gemini-flash-1.5'>Gemini Flash 1.5</SelectItem>
-                    <SelectItem value='gemini-pro-1.5'>Gemini Pro 1.5</SelectItem>
-                    <SelectItem value='gemini-pro-2.0'>Gemini Pro 2.0</SelectItem>
+    const onSave=() => {
+        console.log(formData);
+        updateFormData(formData);
+        toast.success('Settings updated!');
+    }
+    return (
+        <div>
+            <h2 className='font-bold'>Agent</h2>
+            <p className='text-gray-500 mt-2'>Call the AI model with your instruction</p>
+            <div className='mt-3 space-y-1'>
+                <Label>Name</Label>
+                <Input placeholder='Agent Name' 
+                    value={formData?.name}
+                    onChange={(event) => handleChange('name',event.target.value)} />
+            </div>
+            <div className='mt-3 space-y-1'>
+                <Label>Instruction</Label>
+                <Textarea placeholder='Instruction' 
+                value={formData.instruction}
+                onChange={(event) => handleChange('instruction',event.target.value)}/>
+                <h2 className='text-sm p-1 flex gap-2 items-center'>Add Context<FileJson className='h-3 w-3'/></h2>
+            </div>
+            <div className='mt-3 flex justify-between items-center'>
+                <Label>Include chat history</Label>
+                <Switch checked={formData?.includeChatHistory}
 
-                </SelectContent>
-            </Select>
+                onCheckedChange={(checked)=>handleChange('includeHistory',checked)}
+                />
+            </div>
+            <div className='mt-3 flex justify-between items-center'>
+                <Label>Model</Label>
+                <Select 
+                value={formData?.model}
+                onValueChange={(value) => handleChange('model',value)}>
+                    <SelectTrigger >
+                        <SelectValue placeholder="gemini flash 1.5" ></SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value='gemini-flash-1.5'>Gemini Flash 1.5</SelectItem>
+                        <SelectItem value='gemini-pro-1.5'>Gemini Pro 1.5</SelectItem>
+                        <SelectItem value='gemini-pro-2.0'>Gemini Pro 2.0</SelectItem>
+
+                    </SelectContent>
+                </Select>
+            </div>
+            <div className='mt-3 space-y-2'>
+                <Label>Output Format</Label>
+                <Tabs defaultValue="Text" className="w-[400px]" 
+                value={formData?.output}
+                onValueChange={(value) => handleChange('output',value)}>
+                    <TabsList>
+                        <TabsTrigger value="Text">Text</TabsTrigger>
+                        <TabsTrigger value="Json">Json</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="Text">
+                        <h2 className='text-sm text-gray-500'>Output will be Text</h2></TabsContent>
+                    <TabsContent value="Json">
+                        <Label className='text-sm text-gray-500'>Enter Json Schema</Label>
+                        <Textarea placeholder='{title:string}' 
+                        value={formData.schema}
+                        onChange={(event) => handleChange('schema',event.target.value)}
+                        className='max-w-[300px] mt-1'  />
+                    </TabsContent>
+                </Tabs>
+            </div>
+            <Button className='w-full mt-5' onClick={onSave}>Save</Button>
         </div>
-        <div className='mt-3 space-y-2'>
-            <Label>Output Format</Label>
-            <Tabs defaultValue="Text" className="w-[400px]" onValueChange={(value) => handleChange('output',value)}>
-                <TabsList>
-                    <TabsTrigger value="Text">Text</TabsTrigger>
-                    <TabsTrigger value="Json">Json</TabsTrigger>
-                </TabsList>
-                <TabsContent value="Text">
-                    <h2 className='text-sm text-gray-500'>Output will be Text</h2></TabsContent>
-                <TabsContent value="Json">
-                    <Label className='text-sm text-gray-500'>Enter Json Schema</Label>
-                    <Textarea placeholder='{title:string}' 
-                    onChange={(event) => handleChange('schema',event.target.value)}
-                    className='max-w-[300px] mt-1'  />
-                </TabsContent>
-            </Tabs>
-        </div>
-        <Button className='w-full mt-5' onClick={onSave}>Save</Button>
-    </div>
-  )
+    )
 }
 
 export default AgentSettings
