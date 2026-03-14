@@ -8,6 +8,7 @@ export type Agent={
     userId:Id<"UserTable">,
     nodes?:any,
     edges?:any,
-    _creationTime:number
+    _creationTime:number,
+    agentToolConfig?:any
     
 }

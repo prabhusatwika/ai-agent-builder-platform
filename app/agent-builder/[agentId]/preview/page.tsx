@@ -2,20 +2,27 @@
 
 import React, { useEffect, useState } from 'react'
 import Header from '../../_components/Header'
-import { useConvex } from 'convex/react'
+import { useConvex, useMutation } from 'convex/react'
 import { useParams } from 'next/navigation'
 import { Agent } from '@/types/AgentType'
 import { api } from '@/convex/_generated/api'
 import { ReactFlow } from '@xyflow/react'
 import { nodeTypes } from '../page'
+import axios from 'axios';
 import "@xyflow/react/dist/style.css"
+import { Button } from '@/components/ui/button'
+import { RefreshCcwIcon } from 'lucide-react'
+import ChatUi from './_components/ChatUi'
 
 function PreviewAgent() {
 
 
     const convex = useConvex()
     const { agentId } = useParams()
-    const [agentDetail, setAgentDetail] = React.useState<Agent>()
+    const [agentDetail, setAgentDetail] = React.useState<Agent>();
+    const [flowConfig, setFlowConfig] = React.useState<any>(null);
+    const [loading, setLoading]= useState(false);
+    const updateAgentToolConfig = useMutation(api.agent.UpdateAgentToolConfigs);
     
     useEffect(() => {
         GetAgentDetail()
@@ -153,21 +160,50 @@ const GenerateWorkflow = () => {
         flow,
     };
 
+    setFlowConfig(config);
+
     console.log("✅ Generated Workflow Config:", config);
     setConfig(config);
 }
 
-    
+    const GenerateAgentToolConfig = async () => {
+
+    if (!flowConfig) {
+        console.log("Flow config not ready");
+        return;
+    }
+
+    try {
+        setLoading(true);
+
+        const result = await axios.post(
+            "/api/generate-agent-tool-config",
+            { jsonConfig: flowConfig }
+        );
+
+        console.log("RESULT:", result.data);
+
+        await updateAgentToolConfig({
+            id: agentDetail?._id as any,
+            agentToolConfig: result.data.parsedJson
+        });
+
+    } catch (error: any) {
+        console.log("API ERROR:", error.response?.data);
+    }
+    GetAgentDetail();
+    setLoading(false);
+};
 
 
   return (
     <div>
         <Header previewHeader={true}
         agentDetail={agentDetail} />
-        <div className='grid grid-cols-4 '>
-            <div className='col-span-3 p-5 border rounded-2xl m-5'>
+        <div className='grid grid-cols-20 gap-4 p-4 h-[90vh]'>
+            <div className='col-span-13 border rounded-xl p-4 flex flex-col'>
                 <h2>Preview</h2>
-                <div style={{ width: "100%", height: "90vh" }}>
+                <div className="flex-1">
                     <ReactFlow
                     nodes={agentDetail?.nodes || []}
                     edges={agentDetail?.edges || []}
@@ -177,8 +213,19 @@ const GenerateWorkflow = () => {
                 >   </ReactFlow>
                 </div>
             </div>
-            <div className='col-span-1 border rounded-2xl m-5 p-5'>
-                Chat UI
+            <div className='col-span-7 border rounded-xl flex flex-col'>
+                {!agentDetail?.agentToolConfig ? <div className='flex items-center justify-center h-full'>
+                    
+                        <Button onClick={GenerateAgentToolConfig}
+                        
+                        disabled={loading}
+                        ><RefreshCcwIcon className={`${loading && 'animate-spin'}`}/>Reboot Agent</Button>
+                </div>:
+                    <ChatUi GenerateAgentToolConfig={GenerateAgentToolConfig}
+                    loading={loading}
+                    agentDetail={agentDetail}/>
+                }
+                
             </div>
         </div>
     </div>
