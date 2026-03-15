@@ -19,6 +19,13 @@ export default defineSchema({
         published:v.boolean(),
         userId:v.id('UserTable'),
         agentToolConfig:v.optional(v.any())
-    })
+    }),
+    ConversationTable:defineTable({
+        conversationId:v.string(),
+        agentId: v.id('AgentTable'),
+        userId: v.id('UserTable'),
+
         
+    })
+
 })

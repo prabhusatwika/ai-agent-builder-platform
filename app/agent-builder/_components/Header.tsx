@@ -7,9 +7,10 @@ import React from 'react'
 
 type Props={
   agentDetail:Agent | undefined,
-  previewHeader?:boolean
+  previewHeader?:boolean,
+  onPublish:()=>void
 }
-function Header({agentDetail,previewHeader=false}:Props) {
+function Header({agentDetail,previewHeader=false,onPublish}:Props) {
   return (
     <div className='w-full p-3 flex items-center justify-between'>
         <div className='flex gap-2 items-center'>
@@ -24,7 +25,7 @@ function Header({agentDetail,previewHeader=false}:Props) {
             <Link href={`/agent-builder/${agentDetail?.agentId}`}>
             <Button variant={'outline'}><X />Close preview</Button>
             </Link>}
-            <Button>Publish</Button>
+            <Button onClick={onPublish}>Publish</Button>
             
         </div>
     </div>

@@ -13,6 +13,7 @@ import "@xyflow/react/dist/style.css"
 import { Button } from '@/components/ui/button'
 import { RefreshCcwIcon } from 'lucide-react'
 import ChatUi from './_components/ChatUi'
+import PublishCodeDialog from './_components/PublishCodeDialog'
 
 function PreviewAgent() {
 
@@ -23,6 +24,8 @@ function PreviewAgent() {
     const [flowConfig, setFlowConfig] = React.useState<any>(null);
     const [loading, setLoading]= useState(false);
     const updateAgentToolConfig = useMutation(api.agent.UpdateAgentToolConfigs);
+    const [conversationId, setConversationId]= useState<string|null>(null);
+    const [openDialog, setOpenDialog]= useState(false);
     
     useEffect(() => {
         GetAgentDetail()
@@ -54,6 +57,15 @@ const GetAgentDetail = async () => {
         agentId: agentId as string
     });
     setAgentDetail(result);
+
+
+    // Get Conversation ID if not present
+    const conversationIdResult =await axios.get("/api/agent-chat");
+    console.log("Conversation ID:", conversationIdResult.data);
+    setConversationId(conversationIdResult.data);
+
+
+
 }
 
 // 🧩 Generate workflow once agent data is loaded
@@ -194,12 +206,16 @@ const GenerateWorkflow = () => {
     GetAgentDetail();
     setLoading(false);
 };
-
+    const OnPublish=()=>{
+        setOpenDialog(true);
+    }
 
   return (
     <div>
         <Header previewHeader={true}
-        agentDetail={agentDetail} />
+        agentDetail={agentDetail} 
+        onPublish={OnPublish}
+        />
         <div className='grid grid-cols-20 gap-4 p-4 h-[90vh]'>
             <div className='col-span-13 border rounded-xl p-4 flex flex-col'>
                 <h2>Preview</h2>
@@ -223,11 +239,16 @@ const GenerateWorkflow = () => {
                 </div>:
                     <ChatUi GenerateAgentToolConfig={GenerateAgentToolConfig}
                     loading={loading}
-                    agentDetail={agentDetail}/>
+                    agentDetail={agentDetail}
+                    conversationId={conversationId}
+                    />
                 }
                 
             </div>
         </div>
+
+
+        <PublishCodeDialog openDialog={openDialog} setOpenDialog={setOpenDialog} />
     </div>
   )
 }

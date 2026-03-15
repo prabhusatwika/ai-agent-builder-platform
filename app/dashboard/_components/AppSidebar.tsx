@@ -31,7 +31,7 @@ const MenuOptions = [
   },
   {
     title: "AI Agents",
-    url: "/agents",
+    url: "/dashboard/my-agents",
     icon: Headphones,
   },
   {
@@ -41,7 +41,7 @@ const MenuOptions = [
   },
   {
     title: "Profile",
-    url: "#",
+    url: "/dashboard/profile",
     icon: User,
   },
 ];
@@ -54,7 +54,7 @@ function AppSidebar() {
       <SidebarHeader>
         <div className="flex gap-2 items-center">
           <Image src="/logo.svg" alt="logo" width={35} height={35} priority />
-          {open && <h2 className="font-bold text-lg">Agentify</h2>}
+          {open && <h2 className="font-bold text-lg">AgentMaker</h2>}
         </div>
       </SidebarHeader>
 

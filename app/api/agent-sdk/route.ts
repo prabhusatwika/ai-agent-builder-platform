@@ -3,19 +3,16 @@ import { generateText, tool } from "ai";
 import { groq } from "@ai-sdk/groq";
 import { z } from "zod";
 
-/* ---------------- POST : Run Agent ---------------- */
-
 export async function POST(req: NextRequest) {
   try {
-    const { input, tools, agents, conversationId, agentName } =
-      await req.json();
 
-    /* ---------------- Handle Empty Input ---------------- */
+    const { input, tools, agents, agentName } = await req.json();
+
+    /* ---------------- Handle empty input ---------------- */
 
     if (!input || input.trim() === "") {
       return NextResponse.json({
-        output: "Is there anything else you would like to know?",
-        conversationId,
+        output: "Is there anything else you would like to know?"
       });
     }
 
@@ -23,14 +20,14 @@ export async function POST(req: NextRequest) {
 
     if (["ok", "okay", "thanks", "thank you"].includes(normalized)) {
       return NextResponse.json({
-        output: "Is there anything else you would like to know?",
-        conversationId,
+        output: "Is there anything else you would like to know?"
       });
     }
 
     /* ---------------- Generate Tools ---------------- */
 
     const generatedTools = (tools || []).map((t: any) => {
+
       const paramSchema = z.object(
         Object.fromEntries(
           Object.entries(t.parameters || {}).map(([key, type]) => {
@@ -45,15 +42,12 @@ export async function POST(req: NextRequest) {
         name: t.name || "external_api",
 
         tool: tool({
-          description: `
-${t.description}
-
-Use this tool whenever the user asks for real-time data like weather.
-`,
+          description: t.description,
 
           parameters: paramSchema,
 
           async execute(params: any) {
+
             let url = t.url;
 
             /* Replace placeholders */
@@ -76,7 +70,7 @@ Use this tool whenever the user asks for real-time data like weather.
             const response = await fetch(url);
             const data = await response.json();
 
-            /* Weather formatting */
+            /* Weather formatting example */
 
             if (data?.location && data?.current) {
               return `
@@ -90,12 +84,13 @@ Wind Speed: ${data.current.wind_kph} km/h
             }
 
             return JSON.stringify(data);
-          },
-        }),
+          }
+        })
       };
+
     });
 
-    /* ---------------- Convert Tools ---------------- */
+    /* ---------------- Convert tools to object ---------------- */
 
     const toolsObject = Object.fromEntries(
       generatedTools.map((t) => [t.name, t.tool])
@@ -111,56 +106,49 @@ Wind Speed: ${data.current.wind_kph} km/h
     const systemPrompt = `
 You are ${selectedAgent?.name}, a helpful assistant.
 
-You can fetch real-time weather using the weather API tool.
+${selectedAgent?.instructions}
 
 Rules:
 
-1. If the user asks about weather but does NOT provide a city,
-respond with:
-"Please provide the city name so I can check the weather."
+- Use tools when needed to fetch real-time data.
+- If the user asks about weather but does not provide a city,
+  respond with: "Please provide the city name so I can check the weather."
 
-2. If the user provides a city name, call the weather tool immediately.
+- If the user provides a city name, call the weather tool immediately.
 
-3. DO NOT say things like:
-"I will access the tool"
-"This functionality is unavailable"
-"I cannot execute this task"
+- Do not say things like "I will access the tool".
 
-4. Only return the weather result when the weather tool is used.
-
-5. If the user says "ok", "thanks", or similar,
-respond with:
-"Is there anything else you would like to know?"
+- If the user says "ok", "thanks", or similar,
+  respond with: "Is there anything else you would like to know?"
 `;
 
     /* ---------------- Run Model ---------------- */
 
     const result = await generateText({
       model: groq("llama-3.3-70b-versatile"),
+
       system: systemPrompt,
+
       prompt: input,
+
       tools: toolsObject,
+
       toolChoice: "auto",
-      maxSteps: 10,
+
+      maxSteps: 5
     });
 
     return NextResponse.json({
-      output: result.text,
-      conversationId,
+      output: result.text
     });
+
   } catch (error) {
-    console.error("Agent Chat Error:", error);
+
+    console.error("Agent SDK Error:", error);
 
     return NextResponse.json(
       { error: "Agent execution failed" },
       { status: 500 }
     );
   }
-}
-
-/* ---------------- GET : Create Conversation ---------------- */
-
-export async function GET() {
-  const conversationId = crypto.randomUUID();
-  return NextResponse.json(conversationId);
 }
